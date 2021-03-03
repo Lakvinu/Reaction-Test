@@ -11,7 +11,7 @@ window.title("Reaction Test by Lakvinu")
 window.configure(background=rgbtohex(43,135,209))
 
 start = Label(window, text = "When the red box turns green, click as quickly as you can,\n Click anywhere to start", bg=rgbtohex(43,135,209),
-              fg='white', font=("Arial",18,'bold'))
+              fg='white', font=("Arial",20,'bold'))
 
 start.place(anchor = "center", relx = 0.5, rely = 0.5)
 check = False
@@ -23,13 +23,11 @@ def reset():
 
     global start
     global check
-    window.update()
-    time.sleep(3)
 
     start['text'] = "When the red box turns green, click as quickly as you can,\n Click anywhere to start"
     start['bg'] = rgbtohex(43,135,209)
     start['fg'] = 'white'
-    start['font'] = ("Arial",18,'bold')
+    start['font'] = ("Arial",20,'bold')
     window.configure(background=rgbtohex(43,135,209))
 
     check = False
@@ -40,14 +38,16 @@ def left_click(event):
     global check
     global length
 
-    if check == True:
+    if check == None:
+        reset()
+
+    elif check == True:
 
         if start['bg'] == 'light green':
             check = None
             new_time = time.perf_counter() - begin
-            start['text'] = str(int(new_time * 1000)) + ' ms \n 3 Seconds'
+            start['text'] = 'Your Reaction speed is ' + str(int(new_time * 1000)) + ' ms'
             start['font'] = ("Arial", 50)
-            reset()
 
 
 
