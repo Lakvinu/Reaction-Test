@@ -9,62 +9,78 @@ def rgbtohex(r,g,b):
 window = Tk()
 window.title("Reaction Test by Lakvinu")
 window.configure(background=rgbtohex(43,135,209))
+window.state('zoomed')
+window.resizable(0,0)
+main_label = Label(window, text = "When the red box turns green, click as quickly as you can,\n Click anywhere to start", bg=rgbtohex(43,135,209), fg='white', font=("Arial",40,'bold'))
 
-start = Label(window, text = "When the red box turns green, click as quickly as you can,\n Click anywhere to start", bg=rgbtohex(43,135,209),
-              fg='white', font=("Arial",20,'bold'))
+main_label.place(anchor = "center", relx = 0.5, rely = 0.5)
+begin_time = 0
+end_time = 0
+current_stage = 0
 
-start.place(anchor = "center", relx = 0.5, rely = 0.5)
-check = False
-length = 0
-begin = 0
-
-
-def reset():
-
-    global start
-    global check
-
-    start['text'] = "When the red box turns green, click as quickly as you can,\n Click anywhere to start"
-    start['bg'] = rgbtohex(43,135,209)
-    start['fg'] = 'white'
-    start['font'] = ("Arial",20,'bold')
-    window.configure(background=rgbtohex(43,135,209))
-
-    check = False
+def start_stage():
+    window.configure(background=rgbtohex(43, 135, 209))
+    main_label['text'] = "When the red box turns green, click as quickly as you can,\n Click anywhere to start"
+    main_label['bg'] = rgbtohex(43,135,209)
 
 
-def left_click(event):
-    global begin
-    global check
-    global length
+def wait_stage():
+    window.configure(background=rgbtohex(206,38,54))
+    main_label['text'] = "Wait for green"
+    main_label['bg'] = rgbtohex(206,38,54)
 
-    if check == None:
-        reset()
-
-    elif check == True:
-
-        if start['bg'] == 'light green':
-            check = None
-            new_time = time.perf_counter() - begin
-            start['text'] = 'Your Reaction speed is ' + str(int(new_time * 1000)) + ' ms'
-            start['font'] = ("Arial", 50)
+def early_stage():
+    window.configure(background=rgbtohex(43, 135, 209))
+    main_label['text'] = "Too Soon"
+    main_label['bg'] = rgbtohex(43, 135, 209)
 
 
+def press_stage():
 
-    elif check == False:
+    global begin_time
+    global current_stage
 
-        check = True
-        window.configure(background=rgbtohex(206,38,54))
-        start['bg'] = rgbtohex(206,38,54)
-        length = float(Decimal(random.randint(100,700) / 100))
-
-        window.update()
-        time.sleep(length)
-
+    if current_stage == 1:
         window.configure(background="light green")
-        start['bg'] = 'light green'
-        begin = time.perf_counter()
+        main_label['text'] = "Click me"
+        main_label['bg'] = "light green"
+        begin_time = time.perf_counter()
+        current_stage = 2
 
-window.bind("<Button-1>", left_click)
+
+def result_stage():
+    global end_time
+    end_time = time.perf_counter()
+    main_label['text'] = str(int((end_time - begin_time) * 1000)) + ' ms\n Click to continue'
+
+
+def command_function(event):
+
+    global begin_time
+    global current_stage
+
+    # begin stage sending to the wait stage
+    if current_stage == 0:
+        wait_time = random.randint(3000,7000)
+        current_stage = 1
+        wait_stage()
+        window.after(wait_time, press_stage)
+
+    #in the middle of wait stage but if pressed too early
+    elif current_stage == 1:
+        current_stage = 3
+        early_stage()
+
+    #shows the result of your reaction time
+    elif current_stage == 2:
+        result_stage()
+        current_stage = 3
+
+    # resets to the front page or the start
+    elif current_stage == 3:
+        start_stage()
+        current_stage = 0
+
+window.bind("<Button-1>", command_function)
 
 window.mainloop()
